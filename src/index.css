@@ -1,0 +1,313 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Light theme (default) */
+  :root {
+    --app-scale: 1;
+    --appearance-background-image: none;
+    --appearance-background-opacity: 0.45;
+    --appearance-background-blur: 0px;
+    --appearance-background-dim: 0.08;
+    --appearance-panel-opacity: 0.88;
+    --appearance-panel-floor: 0;
+    --appearance-content-scrim-opacity: 0;
+    --appearance-chrome-scrim-opacity: var(--appearance-panel-opacity);
+    --appearance-header-scrim-opacity: 0;
+    --appearance-glass-blur: 18px;
+    --appearance-panel-shadow: none;
+    --appearance-heading-shadow: none;
+    --color-bg: #FAFAFA;
+    --color-bg-secondary: #F4F4F5;
+    --color-surface: rgb(255 255 255 / max(var(--appearance-panel-opacity), var(--appearance-panel-floor)));
+    --color-content-scrim: rgb(255 255 255 / var(--appearance-content-scrim-opacity));
+    --color-chrome-surface: rgb(255 255 255 / var(--appearance-chrome-scrim-opacity));
+    --color-page-header-surface: rgb(255 255 255 / var(--appearance-header-scrim-opacity));
+    --color-surface-hover: #F4F4F5;
+    --color-surface-active: #E4E4E7;
+    --color-border: #D4D4D8;
+    --color-border-subtle: #E4E4E7;
+    --color-text-primary: #18181B;
+    --color-text-secondary: #27272A;
+    --color-text-tertiary: #52525B;
+    --color-text-muted: #71717A;
+    --color-text-faint: #8B8B94;
+    --color-accent: #059669;
+    --color-accent-light: #10B981;
+    --color-accent-dark: #047857;
+    --color-accent-bg: rgba(5,150,105,0.08);
+    --color-accent-border: rgba(5,150,105,0.25);
+    --color-danger: #DC2626;
+    --color-danger-bg: rgba(220,38,38,0.08);
+  }
+
+  /* Dark theme */
+  .dark {
+    --color-bg: #0C0C0F;
+    --color-bg-secondary: #0F0F13;
+    --color-surface: rgb(19 19 23 / max(var(--appearance-panel-opacity), var(--appearance-panel-floor)));
+    --color-content-scrim: rgb(0 0 0 / var(--appearance-content-scrim-opacity));
+    --color-chrome-surface: rgb(19 19 23 / var(--appearance-chrome-scrim-opacity));
+    --color-page-header-surface: rgb(19 19 23 / var(--appearance-header-scrim-opacity));
+    --color-surface-hover: #17171E;
+    --color-surface-active: #1E1E28;
+    --color-border: #222229;
+    --color-border-subtle: #1C1C22;
+    --color-text-primary: #F4F4F5;
+    --color-text-secondary: #D4D4D8;
+    --color-text-tertiary: #A1A1AA;
+    --color-text-muted: #8E8E96;
+    --color-text-faint: #71717A;
+    --color-accent: #10B981;
+    --color-accent-light: #34D399;
+    --color-accent-dark: #059669;
+    --color-accent-bg: rgba(16,185,129,0.08);
+    --color-accent-border: rgba(16,185,129,0.25);
+    --color-danger: #EF4444;
+    --color-danger-bg: rgba(239,68,68,0.08);
+  }
+
+  .theme-sakura {
+    --color-bg: #FFF7FA;
+    --color-bg-secondary: #FFF0F5;
+    --color-surface: rgb(255 255 255 / max(var(--appearance-panel-opacity), var(--appearance-panel-floor)));
+    --color-surface-hover: #FFE8F1;
+    --color-surface-active: #FFD6E6;
+    --color-border: #F5B8CF;
+    --color-border-subtle: #F8D3E1;
+    --color-text-primary: #2A1C23;
+    --color-text-secondary: #3B2831;
+    --color-text-tertiary: #735466;
+    --color-text-muted: #8B6B7D;
+    --color-text-faint: #A98CA0;
+    --color-accent: #D9468F;
+    --color-accent-light: #EC6AA8;
+    --color-accent-dark: #B83275;
+    --color-accent-bg: rgba(217,70,143,0.10);
+    --color-accent-border: rgba(217,70,143,0.28);
+  }
+
+  .theme-anime {
+    --color-bg: #F8FBFF;
+    --color-bg-secondary: #EEF6FF;
+    --color-surface: rgb(255 255 255 / max(var(--appearance-panel-opacity), var(--appearance-panel-floor)));
+    --color-surface-hover: #E5F0FF;
+    --color-surface-active: #D9E9FF;
+    --color-border: #B9D8FF;
+    --color-border-subtle: #D0E4FF;
+    --color-text-primary: #172033;
+    --color-text-secondary: #24304A;
+    --color-text-tertiary: #4F6184;
+    --color-text-muted: #6B7EA3;
+    --color-text-faint: #8CA0C3;
+    --color-accent: #3B82F6;
+    --color-accent-light: #60A5FA;
+    --color-accent-dark: #2563EB;
+    --color-accent-bg: rgba(59,130,246,0.10);
+    --color-accent-border: rgba(59,130,246,0.28);
+  }
+
+  .theme-cyber {
+    --color-bg: #070A12;
+    --color-bg-secondary: #0B1020;
+    --color-surface: rgb(13 18 32 / max(var(--appearance-panel-opacity), var(--appearance-panel-floor)));
+    --color-content-scrim: rgb(3 7 18 / var(--appearance-content-scrim-opacity));
+    --color-chrome-surface: rgb(13 18 32 / var(--appearance-chrome-scrim-opacity));
+    --color-page-header-surface: rgb(13 18 32 / var(--appearance-header-scrim-opacity));
+    --color-surface-hover: #121A2E;
+    --color-surface-active: #1A2540;
+    --color-border: #223456;
+    --color-border-subtle: #18243A;
+    --color-text-primary: #F4F8FF;
+    --color-text-secondary: #D7E3F8;
+    --color-text-tertiary: #A8BADB;
+    --color-text-muted: #8297BE;
+    --color-text-faint: #60749C;
+    --color-accent: #00B8A9;
+    --color-accent-light: #3EE7D8;
+    --color-accent-dark: #008C82;
+    --color-accent-bg: rgba(0,184,169,0.10);
+    --color-accent-border: rgba(62,231,216,0.30);
+  }
+
+  .theme-soft {
+    --color-bg: #F7F8F5;
+    --color-bg-secondary: #EEF1EA;
+    --color-surface: rgb(255 255 255 / max(var(--appearance-panel-opacity), var(--appearance-panel-floor)));
+    --color-surface-hover: #E7ECE2;
+    --color-surface-active: #DDE5D7;
+    --color-border: #C9D4C0;
+    --color-border-subtle: #DDE5D7;
+    --color-text-primary: #1F261F;
+    --color-text-secondary: #2E3A2F;
+    --color-text-tertiary: #596B5A;
+    --color-text-muted: #708370;
+    --color-text-faint: #8EA08D;
+    --color-accent: #5D8A5A;
+    --color-accent-light: #78A874;
+    --color-accent-dark: #496F47;
+    --color-accent-bg: rgba(93,138,90,0.10);
+    --color-accent-border: rgba(93,138,90,0.28);
+  }
+
+  :root[data-wallpaper="on"] {
+    --appearance-panel-shadow: 0 16px 44px rgba(15, 23, 42, 0.14);
+    --appearance-heading-shadow: 0 1px 2px rgba(255, 255, 255, 0.65), 0 0 18px rgba(255, 255, 255, 0.35);
+    --color-surface-hover: rgb(255 255 255 / max(calc(var(--appearance-panel-opacity) + 0.04), var(--appearance-panel-floor)));
+    --color-surface-active: rgb(244 244 245 / 0.96);
+    --color-border: rgba(63, 63, 70, 0.26);
+    --color-border-subtle: rgba(82, 82, 91, 0.18);
+    --color-text-muted: #51525A;
+    --color-text-faint: #6B7280;
+  }
+
+  :root.dark[data-wallpaper="on"],
+  :root.theme-cyber[data-wallpaper="on"] {
+    --appearance-panel-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+    --appearance-heading-shadow: 0 1px 2px rgba(0, 0, 0, 0.85), 0 0 20px rgba(0, 0, 0, 0.55);
+    --color-surface-hover: rgb(31 41 55 / max(calc(var(--appearance-panel-opacity) + 0.04), var(--appearance-panel-floor)));
+    --color-surface-active: rgb(39 50 68 / 0.96);
+    --color-border: rgba(229, 231, 235, 0.22);
+    --color-border-subtle: rgba(229, 231, 235, 0.13);
+    --color-text-muted: #B7C0CF;
+    --color-text-faint: #96A1B2;
+  }
+
+  /* System preference fallback (when no .dark class and user chose "system") */
+  @media (prefers-color-scheme: dark) {
+    :root:not(.dark) {
+      /* JS will add .dark class, but this is a brief fallback */
+    }
+  }
+
+  html,
+  body,
+  #root {
+    height: calc(100vh / var(--app-scale));
+    width: calc(100vw / var(--app-scale));
+  }
+
+  body {
+    @apply bg-background text-primary font-sans antialiased overflow-hidden;
+    letter-spacing: 0;
+  }
+}
+
+@layer components {
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .app-page {
+    @apply mx-auto flex min-h-full w-full max-w-[1200px] flex-col gap-6 pb-8;
+  }
+
+  .app-page-narrow {
+    @apply max-w-[1040px];
+  }
+
+  .app-page-header {
+    @apply border-b border-border-subtle pb-4;
+  }
+
+  .app-page-title {
+    @apply text-[17px] font-semibold tracking-tight text-primary;
+  }
+
+  .app-page-subtitle {
+    @apply mt-1.5 text-[13px] leading-5 text-muted;
+  }
+
+  .app-section-title {
+    @apply text-[12px] font-semibold uppercase tracking-[0.08em] text-muted;
+  }
+
+  .app-panel {
+    @apply rounded-xl border border-border-subtle bg-surface;
+  }
+
+  .app-panel-muted {
+    @apply rounded-xl border border-border-subtle bg-bg-secondary;
+  }
+
+  .app-toolbar {
+    @apply flex flex-wrap items-center justify-between gap-3;
+  }
+
+  .app-input {
+    @apply h-10 rounded-lg border border-border-subtle bg-surface px-3 text-[13px] text-secondary outline-none transition-colors placeholder:text-faint focus:border-border;
+  }
+
+  .app-segmented {
+    @apply flex rounded-lg border border-border-subtle bg-surface p-0.5;
+  }
+
+  .app-segmented-button {
+    @apply rounded-md px-3 py-2 text-[13px] font-medium text-muted transition-colors outline-none hover:text-tertiary;
+  }
+
+  .app-segmented-button-active {
+    @apply bg-surface-active text-secondary;
+  }
+
+  .app-button-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-accent-border bg-accent-dark px-4 py-2.5 text-[13px] font-medium text-white transition-colors outline-none hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .app-button-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-border-subtle bg-surface px-4 py-2.5 text-[13px] font-medium text-secondary transition-colors outline-none hover:bg-surface-hover disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .app-badge {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-hover px-2.5 py-1 text-[12px] font-medium text-tertiary;
+  }
+
+  .app-content-scrim {
+    background: var(--color-content-scrim);
+  }
+
+  .app-drag-bar {
+    background: var(--color-chrome-surface);
+    backdrop-filter: blur(var(--appearance-glass-blur)) saturate(1.12);
+  }
+
+  .app-sidebar-shell {
+    background: var(--color-chrome-surface);
+    box-shadow: var(--appearance-panel-shadow);
+    backdrop-filter: blur(var(--appearance-glass-blur)) saturate(1.12);
+  }
+
+  :root[data-wallpaper="on"] .app-page-header {
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 16px;
+    background: var(--color-page-header-surface);
+    box-shadow: var(--appearance-panel-shadow);
+    backdrop-filter: blur(var(--appearance-glass-blur)) saturate(1.12);
+    padding: 16px 18px;
+  }
+
+  :root[data-wallpaper="on"] .app-page-title,
+  :root[data-wallpaper="on"] .app-page-subtitle,
+  :root[data-wallpaper="on"] .app-section-title {
+    text-shadow: var(--appearance-heading-shadow);
+  }
+
+  :root[data-wallpaper="on"] .app-panel,
+  :root[data-wallpaper="on"] .app-panel-muted,
+  :root[data-wallpaper="on"] .app-input,
+  :root[data-wallpaper="on"] .app-segmented,
+  :root[data-wallpaper="on"] .app-button-secondary,
+  :root[data-wallpaper="on"] .app-badge {
+    box-shadow: var(--appearance-panel-shadow);
+    backdrop-filter: blur(var(--appearance-glass-blur)) saturate(1.12);
+  }
+
+  :root[data-wallpaper="on"][data-readability="readable"] .app-page {
+    max-width: 1160px;
+  }
+}
