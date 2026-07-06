@@ -59,24 +59,24 @@ const READABILITY_TOKENS: Record<ReadabilityMode, {
   glassBlur: number;
 }> = {
   readable: {
-    panelFloor: 0.94,
-    contentScrim: 0.42,
-    chromeScrim: 0.9,
-    headerScrim: 0.86,
+    panelFloor: 0.96,
+    contentScrim: 0.5,
+    chromeScrim: 0.94,
+    headerScrim: 0.92,
     glassBlur: 24,
   },
   balanced: {
-    panelFloor: 0.88,
-    contentScrim: 0.24,
-    chromeScrim: 0.82,
-    headerScrim: 0.72,
-    glassBlur: 18,
+    panelFloor: 0.92,
+    contentScrim: 0.34,
+    chromeScrim: 0.88,
+    headerScrim: 0.86,
+    glassBlur: 20,
   },
   immersive: {
-    panelFloor: 0.76,
-    contentScrim: 0.1,
-    chromeScrim: 0.68,
-    headerScrim: 0.55,
+    panelFloor: 0.82,
+    contentScrim: 0.18,
+    chromeScrim: 0.74,
+    headerScrim: 0.68,
     glassBlur: 14,
   },
 };

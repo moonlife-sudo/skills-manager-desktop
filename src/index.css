@@ -235,6 +235,14 @@
     @apply rounded-xl border border-border-subtle bg-bg-secondary;
   }
 
+  .app-readable-surface {
+    @apply rounded-xl border border-border-subtle bg-surface;
+  }
+
+  .app-agent-card {
+    @apply rounded-lg border border-border-subtle bg-surface;
+  }
+
   .app-toolbar {
     @apply flex flex-wrap items-center justify-between gap-3;
   }
@@ -299,6 +307,8 @@
 
   :root[data-wallpaper="on"] .app-panel,
   :root[data-wallpaper="on"] .app-panel-muted,
+  :root[data-wallpaper="on"] .app-readable-surface,
+  :root[data-wallpaper="on"] .app-agent-card,
   :root[data-wallpaper="on"] .app-input,
   :root[data-wallpaper="on"] .app-segmented,
   :root[data-wallpaper="on"] .app-button-secondary,
@@ -309,5 +319,43 @@
 
   :root[data-wallpaper="on"][data-readability="readable"] .app-page {
     max-width: 1160px;
+  }
+
+  :root[data-wallpaper="on"] .app-readable-surface {
+    background: var(--color-page-header-surface);
+    padding: 16px;
+    backdrop-filter: blur(var(--appearance-glass-blur)) saturate(1.12);
+  }
+
+  :root[data-wallpaper="on"] .app-agent-card {
+    background: var(--color-surface);
+    backdrop-filter: blur(var(--appearance-glass-blur)) saturate(1.12);
+  }
+
+  .sprite-pet-shell {
+    width: 190px;
+    min-height: 190px;
+    display: grid;
+    place-items: end center;
+    filter: drop-shadow(0 18px 24px rgba(0, 0, 0, 0.22));
+    animation: sprite-pet-breathe 3.8s ease-in-out infinite;
+  }
+
+  .sprite-pet-image {
+    width: 190px;
+    max-width: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    pointer-events: none;
+  }
+
+  @keyframes sprite-pet-breathe {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-5px);
+    }
   }
 }

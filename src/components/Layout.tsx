@@ -5,7 +5,7 @@ import { Sidebar } from "./Sidebar";
 import { StatusBanner } from "./StatusBanner";
 import { CommandPalette } from "./CommandPalette";
 import { GlobalSkillDetailHost } from "./GlobalSkillDetailHost";
-import { Live2DPetOverlay } from "./Live2DPetOverlay";
+import { SpritePetOverlay } from "./SpritePetOverlay";
 import { useApp } from "../context/AppContext";
 import { useThemeContext } from "../context/ThemeContext";
 import { useTranslation } from "react-i18next";
@@ -118,7 +118,7 @@ export function Layout() {
         </div>
       </div>
       <CommandPalette />
-      <Live2DPetOverlay />
+      <SpritePetOverlay />
       {location.pathname !== "/my-skills" ? <GlobalSkillDetailHost /> : null}
     </div>
   );

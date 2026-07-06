@@ -1,0 +1,20 @@
+{
+  "id": "academy-assistant",
+  "name": "Academy Assistant",
+  "kind": "sprite-pet",
+  "version": "1.0.0",
+  "frames": {
+    "idle": "idle.png",
+    "blink": "blink.png",
+    "wave": "wave.png",
+    "happy": "happy.png",
+    "thinking": "thinking.png",
+    "typing": "typing.png",
+    "surprised": "surprised.png",
+    "drag": "drag.png",
+    "sleepy": "sleepy.png",
+    "sleep": "sleep.png",
+    "sad": "sad.png",
+    "celebrate": "celebrate.png"
+  }
+}

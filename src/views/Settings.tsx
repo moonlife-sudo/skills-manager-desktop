@@ -65,7 +65,7 @@ import { cn } from "../utils";
 import { useApp } from "../context/AppContext";
 import { useThemeContext } from "../context/ThemeContext";
 import { AgentIcon } from "../components/AgentIcon";
-import { createDefaultPet, usePetSettings, type Live2DPetConfig } from "../hooks/usePetSettings";
+import { createDefaultPet, petActions, usePetSettings, type SpritePetConfig } from "../hooks/usePetSettings";
 import * as api from "../lib/tauri";
 import { applyTextSize } from "../lib/textScale";
 import { getErrorMessage } from "../lib/error";
@@ -503,10 +503,10 @@ export function Settings() {
     toast.success("Appearance reset");
   };
 
-  const updatePet = useCallback(<K extends keyof Live2DPetConfig>(
+  const updatePet = useCallback(<K extends keyof SpritePetConfig>(
     id: string,
     key: K,
-    value: Live2DPetConfig[K]
+    value: SpritePetConfig[K]
   ) => {
     setPets((current) =>
       current.map((pet) => (pet.id === id ? { ...pet, [key]: value } : pet))
@@ -520,16 +520,6 @@ export function Settings() {
   const handleRemovePet = useCallback((id: string) => {
     setPets((current) => current.filter((pet) => pet.id !== id));
   }, [setPets]);
-
-  const handleSelectPetModel = useCallback(async (id: string) => {
-    const selected = await dialogOpen({
-      multiple: false,
-      filters: [{ name: "Live2D model", extensions: ["json"] }],
-    });
-    if (typeof selected === "string") {
-      updatePet(id, "modelPath", selected);
-    }
-  }, [updatePet]);
 
   const handleAutoUpdateIntervalChange = async (value: string) => {
     setAutoUpdateInterval(value);
@@ -902,7 +892,7 @@ export function Settings() {
   const renderAgentCard = (agent: typeof tools[number], dragHandle?: React.ReactNode) => (
     <div
       className={cn(
-        "group relative flex min-h-[86px] flex-col justify-between gap-2 rounded-[6px] border px-3 py-2.5 transition-colors",
+        "app-agent-card group relative flex min-h-[96px] flex-col justify-between gap-2 px-3 py-2.5 transition-colors",
         agent.installed && agent.enabled
           ? "border-border bg-surface"
           : agent.installed
@@ -1157,52 +1147,54 @@ export function Settings() {
 
       <div className="space-y-6">
         {/* Agent status */}
-        <section>
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <h2 className="app-section-title">
-                {t("settings.supportedAgents")} ({installedTools.length}/{tools.length})
-              </h2>
+        <section className="space-y-3">
+          <div className="app-readable-surface space-y-3 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <h2 className="app-section-title">
+                  {t("settings.supportedAgents")} ({installedTools.length}/{tools.length})
+                </h2>
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  onClick={() => setShowAddCustom(true)}
+                  className="flex items-center gap-1 text-[13px] text-accent hover:text-accent-light transition-colors font-medium outline-none"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  {t("settings.addCustomAgent")}
+                </button>
+                <button
+                  onClick={() => handleToggleAllTools(true)}
+                  className="text-[13px] text-accent hover:text-accent-light transition-colors font-medium outline-none"
+                >
+                  {t("settings.enableAll")}
+                </button>
+                <button
+                  onClick={() => handleToggleAllTools(false)}
+                  className="text-[13px] text-muted hover:text-secondary transition-colors font-medium outline-none"
+                >
+                  {t("settings.disableAll")}
+                </button>
+                <button
+                  onClick={handleRefresh}
+                  disabled={refreshing}
+                  className="flex items-center gap-1.5 text-[13px] text-accent hover:text-accent-light transition-colors font-medium outline-none"
+                >
+                  {refreshing ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <RefreshCw className="w-3.5 h-3.5" />
+                  )}
+                  {t("settings.refresh")}
+                </button>
+              </div>
             </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <button
-                onClick={() => setShowAddCustom(true)}
-                className="flex items-center gap-1 text-[13px] text-accent hover:text-accent-light transition-colors font-medium outline-none"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                {t("settings.addCustomAgent")}
-              </button>
-              <button
-                onClick={() => handleToggleAllTools(true)}
-                className="text-[13px] text-accent hover:text-accent-light transition-colors font-medium outline-none"
-              >
-                {t("settings.enableAll")}
-              </button>
-              <button
-                onClick={() => handleToggleAllTools(false)}
-                className="text-[13px] text-muted hover:text-secondary transition-colors font-medium outline-none"
-              >
-                {t("settings.disableAll")}
-              </button>
-              <button
-                onClick={handleRefresh}
-                disabled={refreshing}
-                className="flex items-center gap-1.5 text-[13px] text-accent hover:text-accent-light transition-colors font-medium outline-none"
-              >
-                {refreshing ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : (
-                  <RefreshCw className="w-3.5 h-3.5" />
-                )}
-                {t("settings.refresh")}
-              </button>
-            </div>
-          </div>
 
-          <div className="mb-3 flex flex-wrap items-center gap-3 text-[13px] text-muted">
-            <span>{t("settings.detectedAgents")} <span className="font-medium text-secondary">{installedTools.length}</span></span>
-            <span>{t("settings.enabledAgents")} <span className="font-medium text-secondary">{enabledTools.length}</span></span>
-            <span>{t("settings.customAgents")} <span className="font-medium text-secondary">{customTools.length}</span></span>
+            <div className="flex flex-wrap items-center gap-3 text-[13px] text-muted">
+              <span>{t("settings.detectedAgents")} <span className="font-medium text-secondary">{installedTools.length}</span></span>
+              <span>{t("settings.enabledAgents")} <span className="font-medium text-secondary">{enabledTools.length}</span></span>
+              <span>{t("settings.customAgents")} <span className="font-medium text-secondary">{customTools.length}</span></span>
+            </div>
           </div>
 
           {/* Add custom agent form */}
@@ -1785,12 +1777,12 @@ export function Settings() {
               </div>
             </div>
 
-            {/* Live2D Pets */}
+            {/* Desktop pets */}
             <div className="px-4 py-3">
               <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-[13px] text-secondary font-medium mb-0.5">Live2D Pets</h3>
-                  <p className="text-[13px] text-muted">Add multiple pixi-live2d-display models to the sidebar or workspace.</p>
+                  <h3 className="text-[13px] text-secondary font-medium mb-0.5">Desktop Pets</h3>
+                  <p className="text-[13px] text-muted">Use lightweight anime sprite pets with drag and click interactions.</p>
                 </div>
                 <button
                   type="button"
@@ -1805,7 +1797,7 @@ export function Settings() {
               <div className="space-y-3 rounded-lg border border-border-subtle bg-background p-3">
                 {pets.length === 0 ? (
                   <div className="rounded-lg border border-border-subtle bg-surface px-3 py-3 text-[13px] text-muted">
-                    No Live2D pets configured.
+                    No desktop pets configured.
                   </div>
                 ) : (
                   pets.map((pet, index) => (
@@ -1836,7 +1828,7 @@ export function Settings() {
                         />
                         <select
                           value={pet.position}
-                          onChange={(event) => updatePet(pet.id, "position", event.target.value as Live2DPetConfig["position"])}
+                          onChange={(event) => updatePet(pet.id, "position", event.target.value as SpritePetConfig["position"])}
                           className="h-8 rounded-[4px] border border-border-subtle bg-background px-2.5 text-[13px] text-secondary outline-none transition-colors focus:border-border"
                         >
                           <option value="sidebar">Sidebar</option>
@@ -1854,20 +1846,43 @@ export function Settings() {
                         </button>
                       </div>
 
-                      <div className="mb-3 flex flex-col gap-2 lg:flex-row lg:items-center">
+                      <div className="mb-3 grid gap-2 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto] lg:items-center">
                         <input
-                          value={pet.modelPath}
-                          onChange={(event) => updatePet(pet.id, "modelPath", event.target.value)}
-                          placeholder="Live2D model.json or model3.json path"
+                          value={pet.assetBasePath}
+                          onChange={(event) => updatePet(pet.id, "assetBasePath", event.target.value)}
+                          placeholder="/pets/academy-assistant"
                           className="h-8 min-w-0 flex-1 rounded-[4px] border border-border-subtle bg-background px-2.5 text-[13px] text-secondary outline-none transition-colors focus:border-border"
                         />
+                        <select
+                          value={pet.idleAction}
+                          onChange={(event) => updatePet(pet.id, "idleAction", event.target.value as SpritePetConfig["idleAction"])}
+                          className="h-8 rounded-[4px] border border-border-subtle bg-background px-2.5 text-[13px] text-secondary outline-none transition-colors focus:border-border"
+                        >
+                          {petActions.map((action) => (
+                            <option key={action} value={action}>Idle: {action}</option>
+                          ))}
+                        </select>
+                        <select
+                          value={pet.clickAction}
+                          onChange={(event) => updatePet(pet.id, "clickAction", event.target.value as SpritePetConfig["clickAction"])}
+                          className="h-8 rounded-[4px] border border-border-subtle bg-background px-2.5 text-[13px] text-secondary outline-none transition-colors focus:border-border"
+                        >
+                          {petActions.map((action) => (
+                            <option key={action} value={action}>Click: {action}</option>
+                          ))}
+                        </select>
                         <button
                           type="button"
-                          onClick={() => handleSelectPetModel(pet.id)}
-                          className={cn(actionButtonClass, "border-border-subtle bg-background text-secondary hover:bg-surface-hover")}
+                          role="switch"
+                          aria-checked={pet.draggable}
+                          onClick={() => updatePet(pet.id, "draggable", !pet.draggable)}
+                          className={cn(
+                            "inline-flex h-8 items-center justify-center gap-2 rounded-[4px] border border-border-subtle bg-background px-2.5 text-[13px] text-secondary transition-colors hover:bg-surface-hover",
+                            pet.draggable && "border-accent-border bg-accent-bg text-accent"
+                          )}
                         >
-                          <FolderOpen className="h-3.5 w-3.5" />
-                          Select
+                          <Check className={cn("h-3.5 w-3.5", pet.draggable ? "opacity-100" : "opacity-30")} />
+                          Draggable
                         </button>
                       </div>
 

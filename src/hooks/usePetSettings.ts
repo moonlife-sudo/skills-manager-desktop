@@ -2,60 +2,73 @@ import { useCallback, useEffect, useState } from "react";
 import * as api from "../lib/tauri";
 
 export type PetPosition = "sidebar" | "bottom-left" | "bottom-right" | "top-right";
+export type PetAction =
+  | "idle"
+  | "blink"
+  | "wave"
+  | "happy"
+  | "thinking"
+  | "typing"
+  | "surprised"
+  | "drag"
+  | "sleepy"
+  | "sleep"
+  | "sad"
+  | "celebrate";
 
-export interface Live2DPetConfig {
+export interface SpritePetConfig {
   id: string;
   name: string;
   enabled: boolean;
-  modelPath: string;
+  assetBasePath: string;
   position: PetPosition;
   scale: number;
   opacity: number;
   x: number;
   y: number;
+  draggable: boolean;
+  idleAction: PetAction;
+  clickAction: PetAction;
 }
 
-const STORAGE_KEY = "appearance.live2dPets";
-const SETTINGS_KEY = "appearance_live2d_pets";
+const STORAGE_KEY = "appearance.spritePets";
+const SETTINGS_KEY = "appearance_sprite_pets";
 const EVENT_NAME = "skills-manager-pets-changed";
+const DEFAULT_ASSET_BASE_PATH = "/pets/academy-assistant";
 
-const DEFAULT_PETS: Live2DPetConfig[] = [
+const PET_ACTIONS: PetAction[] = [
+  "idle",
+  "blink",
+  "wave",
+  "happy",
+  "thinking",
+  "typing",
+  "surprised",
+  "drag",
+  "sleepy",
+  "sleep",
+  "sad",
+  "celebrate",
+];
+
+const DEFAULT_PETS: SpritePetConfig[] = [
   {
-    id: "bundled-hiyori",
-    name: "Hiyori",
+    id: "academy-assistant",
+    name: "Academy Assistant",
     enabled: true,
-    modelPath: "/live2d/Hiyori/Hiyori.model3.json",
+    assetBasePath: DEFAULT_ASSET_BASE_PATH,
     position: "bottom-right",
-    scale: 0.72,
+    scale: 0.82,
     opacity: 1,
     x: 0,
     y: 0,
-  },
-  {
-    id: "bundled-mao",
-    name: "Mao",
-    enabled: false,
-    modelPath: "/live2d/Mao/Mao.model3.json",
-    position: "sidebar",
-    scale: 0.58,
-    opacity: 0.95,
-    x: 0,
-    y: 0,
-  },
-  {
-    id: "bundled-wanko",
-    name: "Wanko",
-    enabled: false,
-    modelPath: "/live2d/Wanko/Wanko.model3.json",
-    position: "bottom-left",
-    scale: 0.64,
-    opacity: 0.95,
-    x: 0,
-    y: 0,
+    draggable: true,
+    idleAction: "idle",
+    clickAction: "happy",
   },
 ];
 
-function safeParsePets(value: string | null): Live2DPetConfig[] {
+function safeParsePets(value: string | null): SpritePetConfig[] {
   if (!value) return DEFAULT_PETS;
   try {
     const parsed = JSON.parse(value);
@@ -63,17 +76,25 @@ function safeParsePets(value: string | null): Live2DPetConfig[] {
     if (parsed.length === 0) return DEFAULT_PETS;
     return parsed
       .filter((item) => item && typeof item === "object")
-      .map((item, index) => ({
-        id: typeof item.id === "string" ? item.id : `${Date.now()}-${index}`,
-        name: typeof item.name === "string" ? item.name : `Pet ${index + 1}`,
-        enabled: typeof item.enabled === "boolean" ? item.enabled : true,
-        modelPath: typeof item.modelPath === "string" ? item.modelPath : "",
-        position: isPetPosition(item.position) ? item.position : "bottom-right",
-        scale: clampNumber(item.scale, 0.35, 2, 0.8),
-        opacity: clampNumber(item.opacity, 0.2, 1, 1),
-        x: clampNumber(item.x, -240, 240, 0),
-        y: clampNumber(item.y, -240, 240, 0),
-      }));
+      .map((item, index) => {
+        return {
+          id: typeof item.id === "string" ? item.id : `${Date.now()}-${index}`,
+          name: typeof item.name === "string" ? item.name : `Pet ${index + 1}`,
+          enabled: typeof item.enabled === "boolean" ? item.enabled : index === 0,
+          assetBasePath:
+            typeof item.assetBasePath === "string" && item.assetBasePath.trim()
+              ? item.assetBasePath.trim()
+              : DEFAULT_ASSET_BASE_PATH,
+          position: isPetPosition(item.position) ? item.position : "bottom-right",
+          scale: clampNumber(item.scale, 0.35, 2, 0.82),
+          opacity: clampNumber(item.opacity, 0.2, 1, 1),
+          x: clampNumber(item.x, -360, 360, 0),
+          y: clampNumber(item.y, -360, 360, 0),
+          draggable: typeof item.draggable === "boolean" ? item.draggable : true,
+          idleAction: isPetAction(item.idleAction) ? item.idleAction : "idle",
+          clickAction: isPetAction(item.clickAction) ? item.clickAction : "happy",
+        };
+      });
   } catch {
     return DEFAULT_PETS;
   }
@@ -81,6 +102,10 @@ function safeParsePets(value: string | null): Live2DPetConfig[] {
 
 function isPetPosition(value: unknown): value is PetPosition {
   return value === "sidebar" || value === "bottom-left" || value === "bottom-right" || value === "top-right";
+}
+
+function isPetAction(value: unknown): value is PetAction {
+  return typeof value === "string" && PET_ACTIONS.includes(value as PetAction);
 }
 
 function clampNumber(value: unknown, min: number, max: number, fallback: number) {
@@ -93,7 +118,7 @@ function readLocalPets() {
   return safeParsePets(localStorage.getItem(STORAGE_KEY));
 }
 
-function persistPets(pets: Live2DPetConfig[]) {
+function persistPets(pets: SpritePetConfig[]) {
   const payload = JSON.stringify(pets);
   localStorage.setItem(STORAGE_KEY, payload);
   void api.setSettings(SETTINGS_KEY, payload);
@@ -101,12 +126,12 @@ function persistPets(pets: Live2DPetConfig[]) {
 }
 
 export function usePetSettings() {
-  const [pets, setPetsState] = useState<Live2DPetConfig[]>(() => readLocalPets());
+  const [pets, setPetsState] = useState<SpritePetConfig[]>(() => readLocalPets());
 
   useEffect(() => {
     let cancelled = false;
     api.getSettings(SETTINGS_KEY).then((value) => {
-      if (cancelled || value == null) return;
+      if (cancelled) return;
       const next = safeParsePets(value);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
       setPetsState(next);
@@ -118,7 +143,7 @@ export function usePetSettings() {
 
   useEffect(() => {
     const handler = (event: Event) => {
-      const custom = event as CustomEvent<Live2DPetConfig[]>;
+      const custom = event as CustomEvent<SpritePetConfig[]>;
       setPetsState(Array.isArray(custom.detail) ? custom.detail : readLocalPets());
     };
     window.addEventListener(EVENT_NAME, handler);
@@ -129,7 +154,7 @@ export function usePetSettings() {
     };
   }, []);
 
-  const setPets = useCallback((next: Live2DPetConfig[] | ((current: Live2DPetConfig[]) => Live2DPetConfig[])) => {
+  const setPets = useCallback((next: SpritePetConfig[] | ((current: SpritePetConfig[]) => SpritePetConfig[])) => {
     setPetsState((current) => {
       const resolved = typeof next === "function" ? next(current) : next;
       persistPets(resolved);
@@ -140,17 +165,22 @@ export function usePetSettings() {
   return { pets, setPets };
 }
 
-export function createDefaultPet(): Live2DPetConfig {
+export function createDefaultPet(): SpritePetConfig {
   const id = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
   return {
     id,
-    name: "Live2D Pet",
+    name: "Academy Assistant",
     enabled: true,
-    modelPath: "",
+    assetBasePath: DEFAULT_ASSET_BASE_PATH,
     position: "bottom-right",
-    scale: 0.8,
+    scale: 0.82,
     opacity: 1,
     x: 0,
     y: 0,
+    draggable: true,
+    idleAction: "idle",
+    clickAction: "happy",
   };
 }
+
+export const petActions = PET_ACTIONS;
