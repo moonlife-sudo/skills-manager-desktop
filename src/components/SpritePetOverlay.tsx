@@ -8,6 +8,7 @@ import {
 } from "../hooks/usePetSettings";
 
 const FRAME_COUNT = 6;
+const DRAG_ACTION: PetAction = "drag";
 const RANDOM_ACTIONS: PetAction[] = [
   "idle",
   "blink",
@@ -44,7 +45,7 @@ function clampToViewport(x: number, y: number) {
 }
 
 function randomPetAction(current: PetAction) {
-  const candidates = RANDOM_ACTIONS.filter((action) => action !== current);
+  const candidates = RANDOM_ACTIONS.filter((action) => action !== current && action !== DRAG_ACTION);
   return candidates[Math.floor(Math.random() * candidates.length)] ?? "idle";
 }
 
@@ -134,7 +135,7 @@ function SpritePet({
       moved: false,
     };
     event.currentTarget.setPointerCapture(event.pointerId);
-    setTemporaryAction("drag");
+    setTemporaryAction(DRAG_ACTION);
   };
 
   const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
