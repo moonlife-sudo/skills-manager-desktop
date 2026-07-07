@@ -4,32 +4,48 @@ import { cn } from "../utils";
 import {
   usePetSettings,
   type PetAction,
-  type PetPosition,
   type SpritePetConfig,
 } from "../hooks/usePetSettings";
 
-function positionClass(position: PetPosition) {
-  switch (position) {
-    case "sidebar":
-      return "left-5 bottom-8";
-    case "bottom-left":
-      return "left-7 bottom-8";
-    case "top-right":
-      return "right-7 top-16";
-    default:
-      return "right-7 bottom-8";
-  }
-}
+const FRAME_COUNT = 6;
+const RANDOM_ACTIONS: PetAction[] = [
+  "idle",
+  "blink",
+  "wave",
+  "happy",
+  "thinking",
+  "typing",
+  "surprised",
+  "sleepy",
+  "sad",
+  "celebrate",
+];
 
 function normalizeBasePath(path: string) {
   return path.trim().replace(/[\\/]+$/, "");
 }
 
-function frameSrc(basePath: string, action: PetAction) {
+function frameSrc(basePath: string, action: PetAction, frame: number, useLegacyFrame: boolean) {
   const base = normalizeBasePath(basePath || "/pets/academy-assistant");
-  const relative = `${base}/${action}.png`;
+  const relative = useLegacyFrame
+    ? `${base}/${action}.png`
+    : `${base}/${action}/frame-${String(frame).padStart(2, "0")}.png`;
   if (/^(https?:|data:|blob:|\/)/i.test(relative)) return relative;
   return convertFileSrc(relative.replace(/\//g, "\\"));
+}
+
+function clampToViewport(x: number, y: number) {
+  const width = window.innerWidth || 1280;
+  const height = window.innerHeight || 720;
+  return {
+    x: Math.max(0, Math.min(width - 96, x)),
+    y: Math.max(28, Math.min(height - 96, y)),
+  };
+}
+
+function randomPetAction(current: PetAction) {
+  const candidates = RANDOM_ACTIONS.filter((action) => action !== current);
+  return candidates[Math.floor(Math.random() * candidates.length)] ?? "idle";
 }
 
 function SpritePet({
@@ -41,6 +57,8 @@ function SpritePet({
 }) {
   const [temporaryAction, setTemporaryAction] = useState<PetAction | null>(null);
   const [temporaryOffset, setTemporaryOffset] = useState<{ x: number; y: number } | null>(null);
+  const [currentFrame, setCurrentFrame] = useState(0);
+  const [useLegacyFrame, setUseLegacyFrame] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
   const dragRef = useRef<{
     pointerId: number;
@@ -51,14 +69,51 @@ function SpritePet({
     moved: boolean;
   } | null>(null);
   const timerRef = useRef<number | null>(null);
+  const randomTimerRef = useRef<number | null>(null);
 
   const displayedAction = temporaryAction ?? pet.idleAction;
   const displayedOffset = temporaryOffset ?? { x: pet.x, y: pet.y };
-  const imageSrc = useMemo(() => frameSrc(pet.assetBasePath, displayedAction), [displayedAction, pet.assetBasePath]);
+  const imageSrc = useMemo(
+    () => frameSrc(pet.assetBasePath, displayedAction, currentFrame % FRAME_COUNT, useLegacyFrame),
+    [currentFrame, displayedAction, pet.assetBasePath, useLegacyFrame]
+  );
 
   useEffect(() => () => {
     if (timerRef.current != null) window.clearTimeout(timerRef.current);
+    if (randomTimerRef.current != null) window.clearTimeout(randomTimerRef.current);
   }, []);
+
+  useEffect(() => {
+    const intervalMs = Math.max(42, Math.round(1000 / pet.animationFps));
+    const interval = window.setInterval(() => {
+      setCurrentFrame((frame) => (frame + 1) % FRAME_COUNT);
+    }, intervalMs);
+    return () => window.clearInterval(interval);
+  }, [pet.animationFps]);
+
+  useEffect(() => {
+    if (!pet.randomActions) return;
+    const schedule = () => {
+      randomTimerRef.current = window.setTimeout(() => {
+        if (dragRef.current) {
+          schedule();
+          return;
+        }
+        const nextAction = randomPetAction(displayedAction);
+        setTemporaryAction(nextAction);
+        if (timerRef.current != null) window.clearTimeout(timerRef.current);
+        timerRef.current = window.setTimeout(() => {
+          setTemporaryAction(null);
+          timerRef.current = null;
+        }, Math.max(1400, Math.round(1000 * Math.min(4, pet.randomActionIntervalSec * 0.45))));
+        schedule();
+      }, Math.max(4000, pet.randomActionIntervalSec * 1000));
+    };
+    schedule();
+    return () => {
+      if (randomTimerRef.current != null) window.clearTimeout(randomTimerRef.current);
+    };
+  }, [displayedAction, pet.randomActionIntervalSec, pet.randomActions]);
 
   const triggerAction = (nextAction: PetAction, duration = 1400) => {
     if (timerRef.current != null) window.clearTimeout(timerRef.current);
@@ -70,7 +125,6 @@ function SpritePet({
   };
 
   const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (!pet.draggable) return;
     dragRef.current = {
       pointerId: event.pointerId,
       startClientX: event.clientX,
@@ -90,19 +144,16 @@ function SpritePet({
     const dy = event.clientY - drag.startClientY;
     const moved = Math.abs(dx) + Math.abs(dy) > 4;
     drag.moved = drag.moved || moved;
-    setTemporaryOffset({
-      x: Math.max(-360, Math.min(360, drag.startX + dx)),
-      y: Math.max(-360, Math.min(360, drag.startY + dy)),
-    });
+    setTemporaryOffset(clampToViewport(drag.startX + dx, drag.startY + dy));
   };
 
   const finishPointer = (event: React.PointerEvent<HTMLDivElement>) => {
     const drag = dragRef.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
-    const finalOffset = {
-      x: Math.max(-360, Math.min(360, drag.startX + event.clientX - drag.startClientX)),
-      y: Math.max(-360, Math.min(360, drag.startY + event.clientY - drag.startClientY)),
-    };
+    const finalOffset = clampToViewport(
+      drag.startX + event.clientX - drag.startClientX,
+      drag.startY + event.clientY - drag.startClientY
+    );
     event.currentTarget.releasePointerCapture(event.pointerId);
     dragRef.current = null;
     if (drag.moved) {
@@ -118,18 +169,11 @@ function SpritePet({
   return (
     <div
       className={cn(
-        "fixed z-40 select-none",
-        pet.draggable ? "cursor-grab active:cursor-grabbing" : "cursor-pointer",
-        positionClass(pet.position)
+        "fixed left-0 top-0 z-40 select-none cursor-grab active:cursor-grabbing"
       )}
       style={{
         transform: `translate(${displayedOffset.x}px, ${displayedOffset.y}px) scale(${pet.scale})`,
-        transformOrigin:
-          pet.position === "bottom-left" || pet.position === "sidebar"
-            ? "bottom left"
-            : pet.position === "top-right"
-              ? "top right"
-              : "bottom right",
+        transformOrigin: "top left",
         opacity: pet.opacity,
       }}
       title={pet.name}
@@ -150,8 +194,17 @@ function SpritePet({
             src={imageSrc}
             alt={pet.name}
             className="sprite-pet-image"
-            onError={() => setLoadFailed(true)}
-            onLoad={() => setLoadFailed(false)}
+            onError={() => {
+              if (!useLegacyFrame) {
+                setUseLegacyFrame(true);
+                return;
+              }
+              setLoadFailed(true);
+            }}
+            onLoad={() => {
+              setUseLegacyFrame(false);
+              setLoadFailed(false);
+            }}
           />
         )}
       </div>

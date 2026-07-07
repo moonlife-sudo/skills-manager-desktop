@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import * as api from "../lib/tauri";
 
-export type PetPosition = "sidebar" | "bottom-left" | "bottom-right" | "top-right";
 export type PetAction =
   | "idle"
   | "blink"
@@ -21,14 +20,15 @@ export interface SpritePetConfig {
   name: string;
   enabled: boolean;
   assetBasePath: string;
-  position: PetPosition;
   scale: number;
   opacity: number;
   x: number;
   y: number;
-  draggable: boolean;
   idleAction: PetAction;
   clickAction: PetAction;
+  animationFps: number;
+  randomActions: boolean;
+  randomActionIntervalSec: number;
 }
 
 const STORAGE_KEY = "appearance.spritePets";
@@ -57,14 +57,15 @@ const DEFAULT_PETS: SpritePetConfig[] = [
     name: "Academy Assistant",
     enabled: true,
     assetBasePath: DEFAULT_ASSET_BASE_PATH,
-    position: "bottom-right",
     scale: 0.82,
     opacity: 1,
-    x: 0,
-    y: 0,
-    draggable: true,
+    x: defaultPetCoordinates().x,
+    y: defaultPetCoordinates().y,
     idleAction: "idle",
     clickAction: "happy",
+    animationFps: 8,
+    randomActions: true,
+    randomActionIntervalSec: 12,
   },
 ];
 
@@ -77,6 +78,8 @@ function safeParsePets(value: string | null): SpritePetConfig[] {
     return parsed
       .filter((item) => item && typeof item === "object")
       .map((item, index) => {
+        const fallback = defaultPetCoordinates(isLegacyPosition(item.position) ? item.position : undefined);
+        const legacyAnchored = isLegacyPosition(item.position);
         return {
           id: typeof item.id === "string" ? item.id : `${Date.now()}-${index}`,
           name: typeof item.name === "string" ? item.name : `Pet ${index + 1}`,
@@ -85,14 +88,15 @@ function safeParsePets(value: string | null): SpritePetConfig[] {
             typeof item.assetBasePath === "string" && item.assetBasePath.trim()
               ? item.assetBasePath.trim()
               : DEFAULT_ASSET_BASE_PATH,
-          position: isPetPosition(item.position) ? item.position : "bottom-right",
           scale: clampNumber(item.scale, 0.35, 2, 0.82),
           opacity: clampNumber(item.opacity, 0.2, 1, 1),
-          x: clampNumber(item.x, -360, 360, 0),
-          y: clampNumber(item.y, -360, 360, 0),
-          draggable: typeof item.draggable === "boolean" ? item.draggable : true,
+          x: clampNumber(item.x, -2000, 4000, 0) + (legacyAnchored ? fallback.x : 0),
+          y: clampNumber(item.y, -2000, 4000, 0) + (legacyAnchored ? fallback.y : 0),
           idleAction: isPetAction(item.idleAction) ? item.idleAction : "idle",
           clickAction: isPetAction(item.clickAction) ? item.clickAction : "happy",
+          animationFps: clampNumber(item.animationFps, 2, 24, 8),
+          randomActions: typeof item.randomActions === "boolean" ? item.randomActions : true,
+          randomActionIntervalSec: clampNumber(item.randomActionIntervalSec, 4, 120, 12),
         };
       });
   } catch {
@@ -100,7 +104,7 @@ function safeParsePets(value: string | null): SpritePetConfig[] {
   }
 }
 
-function isPetPosition(value: unknown): value is PetPosition {
+function isLegacyPosition(value: unknown): value is "sidebar" | "bottom-left" | "bottom-right" | "top-right" {
   return value === "sidebar" || value === "bottom-left" || value === "bottom-right" || value === "top-right";
 }
 
@@ -112,6 +116,18 @@ function clampNumber(value: unknown, min: number, max: number, fallback: number)
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) return fallback;
   return Math.min(max, Math.max(min, numeric));
+}
+
+function defaultPetCoordinates(position: "sidebar" | "bottom-left" | "bottom-right" | "top-right" = "bottom-right") {
+  const width = typeof window === "undefined" ? 1280 : window.innerWidth;
+  const height = typeof window === "undefined" ? 720 : window.innerHeight;
+  if (position === "sidebar" || position === "bottom-left") {
+    return { x: 28, y: Math.max(96, height - 248) };
+  }
+  if (position === "top-right") {
+    return { x: Math.max(320, width - 230), y: 76 };
+  }
+  return { x: Math.max(320, width - 230), y: Math.max(96, height - 248) };
 }
 
 function readLocalPets() {
@@ -172,14 +188,15 @@ export function createDefaultPet(): SpritePetConfig {
     name: "Academy Assistant",
     enabled: true,
     assetBasePath: DEFAULT_ASSET_BASE_PATH,
-    position: "bottom-right",
     scale: 0.82,
     opacity: 1,
-    x: 0,
-    y: 0,
-    draggable: true,
+    x: defaultPetCoordinates().x,
+    y: defaultPetCoordinates().y,
     idleAction: "idle",
     clickAction: "happy",
+    animationFps: 8,
+    randomActions: true,
+    randomActionIntervalSec: 12,
   };
 }
 

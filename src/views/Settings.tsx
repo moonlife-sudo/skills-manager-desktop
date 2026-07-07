@@ -1264,7 +1264,7 @@ export function Settings() {
           )}
 
           <div className="space-y-4">
-            <div>
+            <div className="app-readable-surface p-4">
               <div className="mb-2 flex items-center justify-between gap-2">
                 <h3 className="text-[13px] font-medium text-secondary">{t("settings.builtInAgents")}</h3>
                 <span className="text-[12px] text-muted">{mainstreamTools.length}</span>
@@ -1279,7 +1279,7 @@ export function Settings() {
             </div>
 
             {secondaryTools.length > 0 && (
-              <div>
+              <div className="app-readable-surface p-4">
                 <button
                   type="button"
                   onClick={() => setShowMoreAgents((value) => !value)}
@@ -1301,7 +1301,7 @@ export function Settings() {
             )}
 
             {customTools.length > 0 && (
-              <div>
+              <div className="app-readable-surface p-4">
                 <div className="mb-2 flex items-center justify-between gap-2">
                   <h3 className="text-[13px] font-medium text-secondary">{t("settings.customAgentsSection")}</h3>
                   <span className="text-[12px] text-muted">{customTools.length}</span>
@@ -1319,11 +1319,11 @@ export function Settings() {
         </section>
 
         {/* Global config */}
-        <section>
+        <section className="app-readable-surface p-4">
           <h2 className="app-section-title mb-3">
             {t("settings.globalConfig")}
           </h2>
-          <div className="app-panel overflow-hidden divide-y divide-border-subtle">
+          <div className="overflow-hidden rounded-xl border border-border-subtle bg-surface divide-y divide-border-subtle">
             {/* Repo path */}
             <div className="flex flex-wrap items-start justify-between gap-3 px-4 py-3">
               <div className="min-w-0 flex-1">
@@ -1782,7 +1782,7 @@ export function Settings() {
               <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <h3 className="text-[13px] text-secondary font-medium mb-0.5">Desktop Pets</h3>
-                  <p className="text-[13px] text-muted">Use lightweight anime sprite pets with drag and click interactions.</p>
+                  <p className="text-[13px] text-muted">Use frame-based anime sprite pets with free dragging and random actions.</p>
                 </div>
                 <button
                   type="button"
@@ -1826,16 +1826,6 @@ export function Settings() {
                           placeholder={`Pet ${index + 1}`}
                           className="h-8 min-w-[160px] flex-1 rounded-[4px] border border-border-subtle bg-background px-2.5 text-[13px] text-secondary outline-none transition-colors focus:border-border"
                         />
-                        <select
-                          value={pet.position}
-                          onChange={(event) => updatePet(pet.id, "position", event.target.value as SpritePetConfig["position"])}
-                          className="h-8 rounded-[4px] border border-border-subtle bg-background px-2.5 text-[13px] text-secondary outline-none transition-colors focus:border-border"
-                        >
-                          <option value="sidebar">Sidebar</option>
-                          <option value="bottom-right">Bottom right</option>
-                          <option value="bottom-left">Bottom left</option>
-                          <option value="top-right">Top right</option>
-                        </select>
                         <button
                           type="button"
                           onClick={() => handleRemovePet(pet.id)}
@@ -1846,7 +1836,7 @@ export function Settings() {
                         </button>
                       </div>
 
-                      <div className="mb-3 grid gap-2 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto] lg:items-center">
+                      <div className="mb-3 grid gap-2 lg:grid-cols-[minmax(0,1fr)_auto_auto] lg:items-center">
                         <input
                           value={pet.assetBasePath}
                           onChange={(event) => updatePet(pet.id, "assetBasePath", event.target.value)}
@@ -1871,33 +1861,24 @@ export function Settings() {
                             <option key={action} value={action}>Click: {action}</option>
                           ))}
                         </select>
-                        <button
-                          type="button"
-                          role="switch"
-                          aria-checked={pet.draggable}
-                          onClick={() => updatePet(pet.id, "draggable", !pet.draggable)}
-                          className={cn(
-                            "inline-flex h-8 items-center justify-center gap-2 rounded-[4px] border border-border-subtle bg-background px-2.5 text-[13px] text-secondary transition-colors hover:bg-surface-hover",
-                            pet.draggable && "border-accent-border bg-accent-bg text-accent"
-                          )}
-                        >
-                          <Check className={cn("h-3.5 w-3.5", pet.draggable ? "opacity-100" : "opacity-30")} />
-                          Draggable
-                        </button>
                       </div>
 
                       <div className="grid gap-3 md:grid-cols-4">
                         {([
                           { key: "scale", label: "Scale", min: 0.35, max: 2, step: 0.05, value: pet.scale },
                           { key: "opacity", label: "Opacity", min: 0.2, max: 1, step: 0.05, value: pet.opacity },
-                          { key: "x", label: "X offset", min: -240, max: 240, step: 1, value: pet.x },
-                          { key: "y", label: "Y offset", min: -240, max: 240, step: 1, value: pet.y },
+                          { key: "animationFps", label: "Frame speed", min: 2, max: 24, step: 1, value: pet.animationFps },
+                          { key: "randomActionIntervalSec", label: "Random interval", min: 4, max: 120, step: 1, value: pet.randomActionIntervalSec },
                         ] as const).map((item) => (
                           <label key={item.key} className="min-w-0">
                             <span className="mb-1 flex items-center justify-between gap-2 text-[12px] text-muted">
                               <span>{item.label}</span>
                               <span className="font-mono text-faint">
-                                {item.key === "x" || item.key === "y" ? `${item.value}px` : item.value.toFixed(2)}
+                                {item.key === "animationFps"
+                                  ? `${item.value} fps`
+                                  : item.key === "randomActionIntervalSec"
+                                    ? `${item.value}s`
+                                    : item.value.toFixed(2)}
                               </span>
                             </span>
                             <input
@@ -1911,6 +1892,42 @@ export function Settings() {
                             />
                           </label>
                         ))}
+                      </div>
+
+                      <div className="mt-3 grid gap-3 md:grid-cols-[1fr_1fr_auto] md:items-end">
+                        {([
+                          { key: "x", label: "X position", min: 0, max: 2200, step: 1, value: pet.x },
+                          { key: "y", label: "Y position", min: 0, max: 1400, step: 1, value: pet.y },
+                        ] as const).map((item) => (
+                          <label key={item.key} className="min-w-0">
+                            <span className="mb-1 flex items-center justify-between gap-2 text-[12px] text-muted">
+                              <span>{item.label}</span>
+                              <span className="font-mono text-faint">{item.value}px</span>
+                            </span>
+                            <input
+                              type="range"
+                              min={item.min}
+                              max={item.max}
+                              step={item.step}
+                              value={item.value}
+                              onChange={(event) => updatePet(pet.id, item.key, Number(event.target.value))}
+                              className="w-full accent-[var(--color-accent)]"
+                            />
+                          </label>
+                        ))}
+                        <button
+                          type="button"
+                          role="switch"
+                          aria-checked={pet.randomActions}
+                          onClick={() => updatePet(pet.id, "randomActions", !pet.randomActions)}
+                          className={cn(
+                            "inline-flex h-8 items-center justify-center gap-2 rounded-[4px] border border-border-subtle bg-background px-2.5 text-[13px] text-secondary transition-colors hover:bg-surface-hover",
+                            pet.randomActions && "border-accent-border bg-accent-bg text-accent"
+                          )}
+                        >
+                          <Check className={cn("h-3.5 w-3.5", pet.randomActions ? "opacity-100" : "opacity-30")} />
+                          Random actions
+                        </button>
                       </div>
                     </div>
                   ))

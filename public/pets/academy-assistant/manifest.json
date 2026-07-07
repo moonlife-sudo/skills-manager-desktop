@@ -3,18 +3,20 @@
   "name": "Academy Assistant",
   "kind": "sprite-pet",
   "version": "1.0.0",
+  "frameCount": 6,
+  "framePattern": "{action}/frame-{index}.png",
   "frames": {
-    "idle": "idle.png",
-    "blink": "blink.png",
-    "wave": "wave.png",
-    "happy": "happy.png",
-    "thinking": "thinking.png",
-    "typing": "typing.png",
-    "surprised": "surprised.png",
-    "drag": "drag.png",
-    "sleepy": "sleepy.png",
-    "sleep": "sleep.png",
-    "sad": "sad.png",
-    "celebrate": "celebrate.png"
+    "idle": "idle/",
+    "blink": "blink/",
+    "wave": "wave/",
+    "happy": "happy/",
+    "thinking": "thinking/",
+    "typing": "typing/",
+    "surprised": "surprised/",
+    "drag": "drag/",
+    "sleepy": "sleepy/",
+    "sleep": "sleep/",
+    "sad": "sad/",
+    "celebrate": "celebrate/"
   }
 }
